@@ -11,4 +11,8 @@ def invertbro(n):
 
 a = int(input("type any number (like 619): "))
 resultado = invertbro(a)
+
 print(f"the resultaing number is this one: {resultado}")
+print(f"the resultaing number iss thiss: {resultado}")
+print("if you have a feedback, tell us please :)")
+
