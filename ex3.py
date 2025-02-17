@@ -3,3 +3,4 @@ edad = input("Ingrese su edad: ")
 profesion = input("Ingrese su profesion: ")
 
 print(f"Hola, {nombre}. Tienes {edad} y eres {profesion}.")
+print("apruebenos inge plis")
