@@ -9,4 +9,4 @@ def invertbro(n):
 
 a = int(input("type any number (like 619): "))
 resultado = invertbro(a)
-print(f"the resultaing number is {resultado}")
+print(f"the resultaing number isss: {resultado}")
