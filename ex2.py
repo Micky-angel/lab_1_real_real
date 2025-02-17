@@ -1,5 +1,6 @@
 print("do_the_fucking_lab_@")
 
+
 def invertbro(n):
     res = 0
     while n > 0:
@@ -7,6 +8,7 @@ def invertbro(n):
         n = n // 10
     return res
 
+
 a = int(input("type any number (like 619): "))
 resultado = invertbro(a)
-print(f"the resultaing number isss: {resultado}")
+print(f"the resultaing number is this one: {resultado}")
