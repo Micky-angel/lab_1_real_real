@@ -4,4 +4,4 @@ for i in range(n):
     num = float(input(f"Enter number {i+1}: "))
     res += num
 
-print(f"the sum is: {res}")
+print(f"the sum is: {res}, is it clear motherfuck#r?")
