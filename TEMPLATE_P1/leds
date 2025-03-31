@@ -1,0 +1,106 @@
+#include <stdint.h>
+#include <stdbool.h>
+#include <string.h>
+#include "inc/hw_memmap.h"
+#include "inc/hw_types.h"
+#include "driverlib/sysctl.h"
+#include "driverlib/gpio.h"
+#include "driverlib/pin_map.h"
+#include "driverlib/uart.h"
+
+#define BUFFER_SIZE 50
+
+void enviar_string(const char* str)
+{
+    while (*str)
+    {
+        UARTCharPut(UART0_BASE, *str);
+        str++;
+    }
+}
+
+void delay_ms(uint32_t ms)
+{
+    SysCtlDelay((120000000 / 3 / 1000) * ms);
+}
+
+void secuencia1(void) {
+    for (int i = 4; i <= 7; i++) {
+        GPIOPinWrite(GPIO_PORTC_BASE, 1 << i, 1 << i);
+        delay_ms(500);
+        GPIOPinWrite(GPIO_PORTC_BASE, 1 << i, 0);
+    }
+}
+
+void secuencia2(void) {
+    for (int i = 7; i >= 4; i--) {
+        GPIOPinWrite(GPIO_PORTC_BASE, 1 << i, 1 << i);
+        delay_ms(500);
+        GPIOPinWrite(GPIO_PORTC_BASE, 1 << i, 0);
+    }
+}
+
+void secuencia3(void) {
+    for (int i = 4; i <= 7; i++) {
+        GPIOPinWrite(GPIO_PORTC_BASE, 1 << i, 1 << i);
+    }
+    delay_ms(1000);
+    for (int i = 4; i <= 7; i++) {
+        GPIOPinWrite(GPIO_PORTC_BASE, 1 << i, 0);
+    }
+}
+
+int main(void)
+{
+    SysCtlClockFreqSet((SYSCTL_XTAL_25MHZ | SYSCTL_OSC_MAIN | 
+                        SYSCTL_USE_PLL | SYSCTL_CFG_VCO_480), 120000000);
+
+    SysCtlPeripheralEnable(SYSCTL_PERIPH_UART0);
+    SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOA);
+    GPIOPinConfigure(GPIO_PA0_U0RX);
+    GPIOPinConfigure(GPIO_PA1_U0TX);
+    GPIOPinTypeUART(GPIO_PORTA_BASE, GPIO_PIN_0 | GPIO_PIN_1);
+    UARTConfigSetExpClk(UART0_BASE, 120000000, 9600,
+                        (UART_CONFIG_WLEN_8 | UART_CONFIG_STOP_ONE | UART_CONFIG_PAR_NONE));
+
+    SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOC);
+    GPIOPinTypeGPIOOutput(GPIO_PORTC_BASE, GPIO_PIN_4 | GPIO_PIN_5 | GPIO_PIN_6 | GPIO_PIN_7);
+
+    char buffer[BUFFER_SIZE];
+    uint8_t buffer_index = 0;
+
+    while (1)
+    {
+        if(UARTCharsAvail(UART0_BASE))
+        {
+            char c = UARTCharGet(UART0_BASE);
+
+            if(c == '\n' || c == '\r')
+            {
+                buffer[buffer_index] = '\0';
+                enviar_string("Recibido: ");
+                enviar_string(buffer);
+                enviar_string("\n");
+
+                if(strcmp(buffer, "1") == 0) {
+                    secuencia1();
+                } else if(strcmp(buffer, "2") == 0) {
+                    secuencia2();
+                } else if(strcmp(buffer, "3") == 0) {
+                    secuencia3();
+                } else {
+                    enviar_string("Comando no valido\n");
+                }
+
+                buffer_index = 0;
+            }
+            else
+            {
+                if(buffer_index < BUFFER_SIZE - 1)
+                {
+                    buffer[buffer_index++] = c;
+                }
+            }
+        }
+    }
+}
