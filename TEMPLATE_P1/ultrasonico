@@ -1,0 +1,60 @@
+#leer y mandar por uart
+import RPi.GPIO as GPIO
+import time
+import serial
+
+# Configuración de UART
+ser = serial.Serial('/dev/serial0', 9600, timeout=1)
+
+# Configuración de GPIO
+GPIO.setmode(GPIO.BCM)
+TRIG = 17
+ECHO = 27
+
+GPIO.setup(TRIG, GPIO.OUT)
+GPIO.setup(ECHO, GPIO.IN)
+
+def leer_distancia():
+    # Enviar pulso de trigger
+    GPIO.output(TRIG, True)
+    time.sleep(0.00001)
+    GPIO.output(TRIG, False)
+
+    tiempo_inicio = time.time()
+
+    # Esperar señal de eco
+    while GPIO.input(ECHO) == 0:
+        inicio_pulso = time.time()
+        if time.time() - tiempo_inicio > 1:
+            print("Error: No se recibió señal de ECHO")
+            return None
+
+    while GPIO.input(ECHO) == 1:
+        fin_pulso = time.time()
+
+    # Calcular distancia
+    duracion_pulso = fin_pulso - inicio_pulso
+    distancia = (duracion_pulso * 34300) / 2
+    return distancia
+
+try:
+    while True:
+        distancia = leer_distancia()
+        if distancia is not None:
+            mensaje = f"Distancia: {distancia:.2f} cm"
+            print(mensaje)
+
+            # Evaluar condición y enviar por UART
+            if distancia < 3:
+                print("Enviando: 0")
+                ser.write(b'0')
+            else:
+                print("Enviando: 1")
+                ser.write(b'1')
+                
+        time.sleep(1)
+
+except KeyboardInterrupt:
+    print("Medición detenida.")
+    GPIO.cleanup()
+    ser.close()
